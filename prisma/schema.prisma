@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+
+model Books {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  rate        Int
+  published   DateTime
+  pages       Int
+  price       Float
+  cover       String
+  author      Author   @relation(fields: [authorId], references: [id])
+  authorId    Int
+  genres      GenresOnBooks[] // A book can have many genres (through the join table)
+}
+
+model Author {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  books Books[]
+}
+
+model Genres {
+  id    Int    @id @default(autoincrement())
+  genre String @unique
+  books GenresOnBooks[] // A genre can be assigned to many books (through the join table)
+}
+
+// The join table to represent the many-to-many relationship
+model GenresOnBooks {
+  book     Books  @relation(fields: [bookId], references: [id])
+  bookId   Int
+  genre    Genres @relation(fields: [genreId], references: [id])
+  genreId  Int
+
+  @@id([bookId, genreId]) // Composite key to avoid duplicate entries
+}
